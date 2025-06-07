@@ -1,6 +1,19 @@
 # Convert VMware Virtual Machine to Kubervirt Virtual Machine
 
-This repository is for learning purposes about the VMware VMX and VMDK files and how to map them to a Kubervirt VirtualMachine manifest.
+This repository is for learning purposes about is necessary to convert a VMware virtual machine to a Kubervirt VirtualMachine manifest.
+
+The overall process being identified so far is the following:
+1. identify the type of VMDK being used
+1. map the content of the VMX file to a VirtualMachine manifest
+1. map missing specs with the VMDK Descriptor
+1. convert the vmdk to a raw image(1)
+1. inject the raw image to the ```PersistentVolume``` created from the ```PersistentVolumeClaim```
+1. create the VirtualMachine 
+1. boot
+1. remove the VMware tools
+1. add the Kubevirt tools
+
+(1) an attempt to remove the VMDK and Descriptor header will be tested too avoiding of full copy of the data blocks.
 
 # Example
 
