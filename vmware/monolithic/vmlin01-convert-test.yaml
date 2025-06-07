@@ -1,0 +1,38 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  creationTimestamp: null
+  name: vmlin01-convert-test
+  namespace: vm2kv-poc
+spec:
+  running: false
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        kubevirt.io: vmlin01-convert-test
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        devices:
+          disks:
+          - bootOrder: 1
+            disk:
+              bus: virtio
+            name: disk0
+          interfaces:
+          - masquerade: {}
+            name: default
+          rng: {}
+        memory:
+          guest: 8Gi
+        resources: {}
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - name: disk0
+        persistentVolumeClaim:
+          claimName: vmlin01-boot
+status: {}

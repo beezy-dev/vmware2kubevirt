@@ -1,0 +1,25 @@
+.encoding = "UTF-8"
+config.version = "8"
+virtualHW.version = "19" # Or a version compatible with your environment
+vmci0.present = "TRUE"
+
+displayName = "vmlin01"
+guestOS = "otherlinux-64" # Or a more specific guest OS identifier
+
+memsize = "8192" # 8GB = 8 * 1024 MB
+numvcpus = "4"
+cpuid.coresPerSocket = "1" # You can adjust this based on desired topology
+
+scsi0.present = "TRUE"
+scsi0.virtualDev = "lsisas1068"
+scsi0:0.present = "TRUE"
+scsi0:0.fileName = "vmlin01.vmdk" # Assumes disk is named vmlin01.vmdk
+scsi0:0.deviceType = "scsi-hardDisk"
+
+ethernet0.present = "TRUE"
+ethernet0.virtualDev = "vmxnet3"
+ethernet0.networkName = "VM Network" # Or your specific network
+ethernet0.addressType = "generated"
+
+# Add other devices as needed, e.g., CD/DVD, USB controller, etc.
+# floppy0.present = "FALSE"
