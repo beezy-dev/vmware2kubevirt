@@ -1,19 +1,26 @@
 # Convert VMware Virtual Machine to Kubervirt Virtual Machine
 
-This repository is for learning purposes about is necessary to convert a VMware virtual machine to a Kubervirt VirtualMachine manifest.
+> ![NOTE]
+> This repository is only for learning purposes from a NetApp/ONTAP perspective only. 
+ 
+The VMware datastore provides a one-to-many, or a single endpoint (SAN or NAS) hosting multiple virtual machines along their configuration files.   
+In contrast, the construct of datastore in Kubevirt does not exists, instead each virtual machine will have one or multiple PVCs to host the virtual machine disk(s) using a raw disk image format while the configuration is stored in the etcd like any other kubernetes primitives. 
 
-The overall process being identified so far is the following:
-1. identify the type of VMDK being used
-1. map the content of the VMX file to a VirtualMachine manifest
-1. map missing specs with the VMDK Descriptor
-1. convert the vmdk to a raw image(1)
-1. inject the raw image to the ```PersistentVolume``` created from the ```PersistentVolumeClaim```
-1. create the VirtualMachine 
-1. boot
-1. remove the VMware tools
-1. add the Kubevirt tools
+## Migration workflow 
+Considering the above, converting ten virtual machines from a VMware datastore to 10 Kubevirt VirtualMachines will require the following steps:
 
-(1) an attempt to remove the VMDK and Descriptor header will be tested too avoiding of full copy of the data blocks.
+1. pre-provision 10 ONTAP volumes through Trident as PVCs with the appropriate size (OpenShift Virtualization is adding an extra 5.5% for overhead)
+1. perform a storage vmotion of each VMware virtual machines to its dedicated ONTAP volumes
+1. offline the 10 virtual machines
+1. snapshots each ONTAP volumes through Trident
+1. import each snapshots as a new PVCs in their respective namespace if needed
+1. convert the vmdks to with qemu-img 
+1. use vmx2vmi to convert the VMware virtual machine configurations to their respective Kubevirt VirtualMachine manifest
+1. leverage the cloud-init to replace the VMware tools with the Kubevirt guest tools
+1. boot the virtual machines and verify their status 
+1. perform a clean up of the VMware virtual machines PVCs after 7 days
+1. perform a clean up of the original VMware datastore after 30 days
+
 
 # Example
 
@@ -86,13 +93,9 @@ ddb.toolsVersion = "2147483647"
 --- End Descriptor ---
 ```
 
-### Multiple Files (Split)
+## VMX to VirtualMachine
 
-TBD
-
-## VMX Conversion
-
-Run the following command to create the KubeVirt VirtualMachine manifest from a VMware virtual machine: 
+Run the following command to create the KubeVirt VirtualMachine manifest from a VMware virtual machine vmx file: 
 
 ```
 $ go run main.go -vmx vmware/monolithic/vmlin01.vmx -pvc vmlin01-boot -name vmlin01-convert-test -namespace vm2kv-poc
